@@ -1,0 +1,281 @@
+---
+title: "P8122 Midterm yz4184"
+author: "Yunlin Zhou"
+date: '2022-10-21'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(ri)
+library(perm)
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+# Question 1
+
+## 1)
+
+*ACE*
+
+$$\ ACE = E[Y_{1}] - E[Y_{0}] = \frac{12}{20} - \frac{5}{20} = \frac{7}{20} = 0.35 $$
+
+The new treatment is better on average since the ACE is larger than 0.
+
+
+## 2)
+
+$$E[Y|A=1] - E[Y|A=0] = \frac{5}{10} - \frac{4}{10} = \frac{1}{10} = 0.1$$
+
+Difference in observed group means is 0.1.
+
+From the association parameter above, we can conclude that the new treatment is better on average.
+
+## 3) 
+
+*The results from question 1 and 2 are not same.*
+
+* In the scenario in question 1, the assignment mechanism is regular and known and controlled. $E[Y_{a}]$ are population quantities that are computed by taking an average of potential outcome among all individuals is the population.
+
+* In the scenario in question 2, the assignment mechanism was not known or controlled in advance.The result was only defined post selection. $E[Y|A=a]$ is computes by taking on average of observed outcomes on in the subset of the population with A=a.
+
+* The result in question 2 in smaller, which make the effect of the new treatment seem smaller. The possible reason is that those who received the standard treatment might be healthier. And those who received the new treatment might be weaker. From the truth in question 1, we know that the disease would be prevented in both treatments for subject 3 5 11 16 . In the data in question2, we can see that subject 3 5 11 are assigned to the control group. Similarly, many of those whose disease would not be prevented in both treatments are assigned to treatment group. Thus, the result would be lower in real world data in this case.
+
+
+## 4) 
+
+a) In an observational study, we typically get all data together
+(covariates, treatment, outcomes), and the assignment mechanism is not known or controlled. It will typically be the case that individuals select or are selected to take the active treatment based on their underlying health condition. So the data might arise like the one in question 2. 
+
+b) In a randomized controlled trial, the assignment mechanism is regular and  known and controlled. Also, randomization enforces the assumption of unconfoundedness or exchangeability marginally across covariants. So the data might arise more like the result in theory.
+
+
+## 5)
+
+
+* There is a significant difference between the result in question 1 and 2. It is possible that the experiment is not a randomized trial. But we do not have enoght evidence for this assumption.
+
+* This study might not be a Bernoulli randomized experiment. Because the treatment group size and the control group size are equally assigned. But the group a size in Bernoulli randomized experiment is likely to be unequally assigned.
+
+
+## 6)
+
+From the "truth" we know that: for some weak patients, the disease would not be prevented in both treatments; for some strong patients, the disease would be prevented in both treatments. And for the normal patients, the effects would be different due to different treatments. So the health status of patients is a covariate and we will stratify the patients due to their health status. The process is below:
+
+* filter the patients.
+  * weak: Y1 = Y0 = 0
+  * normal: Y1 =! Y0
+  * strong: Y1 = Y0 = 1
+
+* Completely randomize the units with _rbinom_ function within each block.
+
+* Build up the "real-world" dataset of different health status.
+
+
+```{r, create dataset}
+individual <- c(1:20)
+Y1 <- c(1,1,1,0,1,0,1,1,0,0,1,0,1,0,0,1,1,1,0,1)
+Y0 <- c(0,0,1,0,1,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0)
+
+df = cbind(individual,Y1,Y0)%>%
+  as.data.frame()%>%
+  mutate(status = ifelse(Y1 == 0 & Y0 == 0, "weak",
+                         ifelse(Y1 ==1 & Y0 == 1, "strong","normal")))%>%
+  mutate(status = as.factor(status))
+
+df_weak = df %>%
+  filter(status == "weak")
+
+df_normal = df %>%
+  filter(status == "normal")
+
+df_strong = df %>%
+  filter(status == "strong")
+```
+
+
+```{r, generate randimization}
+set.seed(8122)
+
+norm_y1 <- sample_frac(df_normal,0.5)%>% mutate(Y0 = NA)
+norm_y0 <- df_normal %>%
+  filter(!(individual %in% (norm_y1$individual))) %>%
+  mutate(Y1 = NA)
+norm_rw = rbind(norm_y1,norm_y0) %>%
+  arrange(individual)
+knitr::kable(norm_rw)
+
+weak_y1 <- sample_frac(df_weak,0.5)%>% mutate(Y0 = NA)
+weak_y0 <- df_weak %>%
+  filter(!(individual %in% (weak_y1$individual))) %>%
+  mutate(Y1 = NA)
+weak_rw = rbind(weak_y1,weak_y0)%>% arrange(individual)
+knitr::kable(weak_rw)
+
+
+strong_y1 <- sample_frac(df_strong,0.5)%>% mutate(Y0 = NA)
+strong_y0 <- df_strong %>%
+  filter(!(individual %in% (strong_y1$individual))) %>%
+  mutate(Y1 = NA)
+strong_rw = rbind(strong_y1,strong_y0)%>% arrange(individual)
+knitr::kable(strong_rw)
+
+```
+
+
+## 7)
+
+_Sharp null hypothesis is that there is no treatment effect:_
+
+$$H_0: \tau_i = Y_{1i} - Y_{0i} = 0$$ for all $i$
+
+
+### For the normal patients:
+
+```{r, data preparation}
+norm_rw_new = norm_rw %>%
+pivot_longer(cols = c ("Y1","Y0"),names_to = "A",values_to = "Y", values_drop_na =T) %>%
+  mutate(A = ifelse(A == "Y1", 1, 0))
+Y_norm = norm_rw_new$Y
+```
+
+First, we build a new data set including assignment(A) and outcome(Y).
+
+```{r, test the sharp null hypothesis}
+Abold_1 = chooseMatrix(9, 4)
+Abold_1 = t(Abold_1)
+```
+
+Then, we generate a matrix to show different possible assignment vectors. There are $9\choose4$ possibilities for A.
+
+
+```{r, plot the randomization distribution}
+rdist_norm <- rep(NA, times = ncol(Abold_1))
+for (i in 1:ncol(Abold_1)) {
+  A_tilde <- Abold_1[, i]
+  rdist_norm[i] <- mean(Y_norm[A_tilde == 1]) - mean(Y_norm[A_tilde == 0])
+}
+
+pval_1 <- mean(rdist_norm >= T_sharp_norm)
+quant_1 <- quantile(rdist_norm,probs = 1-pval)
+hist(rdist_norm)
+abline(v = quant_1,col="red")
+pval_1
+```
+
+Finally, we use the bootstrap to generate the exact randomization distribution for T, under the sharp null hypothesis of no difference. Also, we calculated the p-value, and added the red line in the plot.
+
+Since the exact p-value is `r pval_1` < 0.05, we reject the sharp null hypothesis and conclude that there is individual causal effect for all individuals in the sample.
+
+
+*The process is same for the weak and strong patients.*
+
+### For the weak patients:
+
+```{r, data preparation}
+weak_rw_new = weak_rw %>%
+pivot_longer(cols = c ("Y1","Y0"),names_to = "A",values_to = "Y", values_drop_na =T) %>%
+  mutate(A = ifelse(A == "Y1", 1, 0))
+Y_weak = weak_rw_new$Y
+```
+
+
+```{r, test the sharp null hypothesis}
+Abold_2 = chooseMatrix(7, 4)
+Abold_2 = t(Abold_2)
+```
+
+
+```{r, plot the randomization distribution}
+rdist_weak <- rep(NA, times = ncol(Abold_2))
+for (i in 1:ncol(Abold_2)) {
+  A_tilde <- Abold_2[, i]
+  rdist_weak[i] <- mean(Y_weak[A_tilde == 1]) - mean(Y_weak[A_tilde == 0])
+}
+
+pval_2 <- mean(rdist_weak >= T_sharp_weak)
+quant_2 <- quantile(rdist_weak,probs = 1-pval_2)
+hist(rdist_weak)
+abline(v = quant_2,col="red")
+pval_2
+```
+
+As we know from the "truth", the disease would not be prevented in both treatments for the weak patients. Since the exact p-value is `r pval_2` > 0.05, we fail to reject the sharp null hypothesis that there is no difference so there is no treatment effect for all individuals in the sample.
+
+
+### For the strong patients:
+
+```{r, data preparation}
+strong_rw_new = strong_rw %>%
+pivot_longer(cols = c ("Y1","Y0"),names_to = "A",values_to = "Y", values_drop_na =T) %>%
+  mutate(A = ifelse(A == "Y1", 1, 0))
+Y_strong = strong_rw_new$Y
+```
+
+
+```{r, test the sharp null hypothesis}
+Abold_3 = chooseMatrix(4, 2)
+Abold_3 = t(Abold_3)
+
+```
+
+
+```{r, plot the randomization distribution}
+rdist_strong <- rep(NA, times = ncol(Abold_3))
+for (i in 1:ncol(Abold_3)) {
+  A_tilde <- Abold_3[, i]
+  rdist_strong[i] <- mean(Y_strong[A_tilde == 1]) - mean(Y_strong[A_tilde == 0])
+}
+
+pval_3 <- mean(rdist_strong >= T_sharp_strong)
+quant_3 <- quantile(rdist_strong,probs = 1-pval_3)
+hist(rdist_strong)
+abline(v = quant_3,col="red")
+pval_3
+```
+
+
+As we know from the "truth", the disease would be prevented in both treatments for the strong patients. Since the exact p-value is `r pval_3` > 0.05, we fail to reject the sharp null hypothesis that there is no difference so there is no treatment effect for all individuals in the sample.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
