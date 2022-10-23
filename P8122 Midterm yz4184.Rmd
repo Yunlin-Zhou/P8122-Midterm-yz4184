@@ -70,9 +70,9 @@ From the "truth" we know that: for some weak patients, the disease would not be 
   * normal: Y1 =! Y0
   * strong: Y1 = Y0 = 1
 
-* Completely randomize the units with _rbinom_ function within each block.
+* Completely randomize the units with _sample_frac_ function within each block.
 
-* Build up the "real-world" dataset of different health status.
+* Combine the "real-world" dataset with different health status data.
 
 
 ```{r, create dataset}
@@ -97,7 +97,7 @@ df_strong = df %>%
 ```
 
 
-```{r, generate randimization}
+```{r}
 set.seed(8122)
 
 norm_y1 <- sample_frac(df_normal,0.5)%>% mutate(Y0 = NA)
@@ -107,22 +107,36 @@ norm_y0 <- df_normal %>%
 norm_rw = rbind(norm_y1,norm_y0) %>%
   arrange(individual)
 knitr::kable(norm_rw)
+```
 
+
+```{r}
 weak_y1 <- sample_frac(df_weak,0.5)%>% mutate(Y0 = NA)
 weak_y0 <- df_weak %>%
   filter(!(individual %in% (weak_y1$individual))) %>%
   mutate(Y1 = NA)
 weak_rw = rbind(weak_y1,weak_y0)%>% arrange(individual)
 knitr::kable(weak_rw)
+```
 
 
+```{r}
 strong_y1 <- sample_frac(df_strong,0.5)%>% mutate(Y0 = NA)
 strong_y0 <- df_strong %>%
   filter(!(individual %in% (strong_y1$individual))) %>%
   mutate(Y1 = NA)
 strong_rw = rbind(strong_y1,strong_y0)%>% arrange(individual)
 knitr::kable(strong_rw)
+```
 
+
+*So my final "real-world" data is :*
+
+```{r}
+df_rw = rbind(norm_rw,weak_rw, strong_rw) %>%
+  arrange(individual)
+
+knitr::kable(df_rw)
 ```
 
 
@@ -133,138 +147,142 @@ _Sharp null hypothesis is that there is no treatment effect:_
 $$H_0: \tau_i = Y_{1i} - Y_{0i} = 0$$ for all $i$
 
 
-### For the normal patients:
-
 ```{r, data preparation}
-norm_rw_new = norm_rw %>%
+df_rw_new = df_rw %>%
 pivot_longer(cols = c ("Y1","Y0"),names_to = "A",values_to = "Y", values_drop_na =T) %>%
   mutate(A = ifelse(A == "Y1", 1, 0))
-Y_norm = norm_rw_new$Y
+Y = df_rw_new$Y
+A = df_rw_new$A
+
+T_stat <- mean(Y[A == 1]) - mean(Y[A == 0])
+T_stat
 ```
 
-First, we build a new data set including assignment(A) and outcome(Y).
+First, we build a new data set including assignment(A) and outcome(Y). We also calculated the sharp null t test which is `r T_stat`.
 
-```{r, test the sharp null hypothesis}
+
+```{r}
 Abold_1 = chooseMatrix(9, 4)
 Abold_1 = t(Abold_1)
+ncol(Abold_1)
+
+Abold_2 = chooseMatrix(7, 4)
+Abold_2 = t(Abold_2)
+ncol(Abold_2)
+
+Abold_3 = chooseMatrix(4, 2)
+Abold_3 = t(Abold_3)
+ncol(Abold_3)
+
+ncol(Abold_1)*ncol(Abold_2)*ncol(Abold_3)
+
+Abold <- genperms(A, maxiter = 26460)
+
+Abold <- genperms(A)
 ```
 
-Then, we generate a matrix to show different possible assignment vectors. There are $9\choose4$ possibilities for A.
+
+Then, we generate a matrix to show different possible assignment vectors. There are $9\choose4$$7\choose4$$4\choose2$ possibilities for A. 
 
 
 ```{r, plot the randomization distribution}
-rdist_norm <- rep(NA, times = ncol(Abold_1))
-for (i in 1:ncol(Abold_1)) {
-  A_tilde <- Abold_1[, i]
-  rdist_norm[i] <- mean(Y_norm[A_tilde == 1]) - mean(Y_norm[A_tilde == 0])
+rdist <- rep(NA, times = ncol(Abold))
+for (i in 1:ncol(Abold)) {
+  A_tilde <- Abold[, i]
+  rdist[i] <- mean(Y[A_tilde == 1]) - mean(Y[A_tilde == 0])
 }
 
-pval_1 <- mean(rdist_norm >= T_sharp_norm)
-quant_1 <- quantile(rdist_norm,probs = 1-pval)
-hist(rdist_norm)
-abline(v = quant_1,col="red")
-pval_1
+pval <- mean(rdist >= T_stat)
+
+quant <- quantile(rdist,probs = 1-pval)
+hist(rdist)
+abline(v = quant,col="red")
 ```
+
 
 Finally, we use the bootstrap to generate the exact randomization distribution for T, under the sharp null hypothesis of no difference. Also, we calculated the p-value, and added the red line in the plot.
 
-Since the exact p-value is `r pval_1` < 0.05, we reject the sharp null hypothesis and conclude that there is individual causal effect for all individuals in the sample.
+
+* Since the exact p-value is `r pval` > 0.05, we fail to reject the sharp null hypothesis that there is no difference so there is no treatment effect for all individuals in the sample.
 
 
-*The process is same for the weak and strong patients.*
+## 8)
 
-### For the weak patients:
+1. Create a grid of possible sharp null hypotheses.
+2. Calculate p-values for each sharp null.
+3. For the point estimate: Pick the value that is ”least surprising” under the null.
+4. For the confidence interval: Find the range of the values that we would not reject under the null.
 
-```{r, data preparation}
-weak_rw_new = weak_rw %>%
-pivot_longer(cols = c ("Y1","Y0"),names_to = "A",values_to = "Y", values_drop_na =T) %>%
-  mutate(A = ifelse(A == "Y1", 1, 0))
-Y_weak = weak_rw_new$Y
-```
+```{r}
+grid<-seq(-1,1, by=0.01)
+p.ci<-rep(NA,length(grid))
 
-
-```{r, test the sharp null hypothesis}
-Abold_2 = chooseMatrix(7, 4)
-Abold_2 = t(Abold_2)
-```
-
-
-```{r, plot the randomization distribution}
-rdist_weak <- rep(NA, times = ncol(Abold_2))
-for (i in 1:ncol(Abold_2)) {
-  A_tilde <- Abold_2[, i]
-  rdist_weak[i] <- mean(Y_weak[A_tilde == 1]) - mean(Y_weak[A_tilde == 0])
+rdist_1 <- rep(NA, times = ncol(Abold))
+for (i in 1:length(grid)){
+for (k in 1:ncol(Abold)) {
+  A_tilde <- Abold[, k]
+  rdist_1[k] <- mean(Y[A_tilde == 1]) - mean(Y[A_tilde == 0])+grid[i]
+}
+  p.ci[i]<-mean(rdist_1 >= T_stat)
 }
 
-pval_2 <- mean(rdist_weak >= T_sharp_weak)
-quant_2 <- quantile(rdist_weak,probs = 1-pval_2)
-hist(rdist_weak)
-abline(v = quant_2,col="red")
-pval_2
+cbind(p.ci,grid)
+
+point_estimate = mean(grid[which(abs(p.ci - 0.5) == min(abs(p.ci - 0.5)))])
+
+ci = range(grid[which(0.05<p.ci & p.ci<0.95)])
 ```
 
-As we know from the "truth", the disease would not be prevented in both treatments for the weak patients. Since the exact p-value is `r pval_2` > 0.05, we fail to reject the sharp null hypothesis that there is no difference so there is no treatment effect for all individuals in the sample.
+* The point estimate is `r point_estimate` and the confidence interval is `r ci`.
+
+* Point estimate = `r point_estimate`: For the petients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r point_estimate` > 0.
+
+* The true ACE would fall in the range `r ci` at 5% significance level.
 
 
-### For the strong patients:
+# 9)
 
-```{r, data preparation}
-strong_rw_new = strong_rw %>%
-pivot_longer(cols = c ("Y1","Y0"),names_to = "A",values_to = "Y", values_drop_na =T) %>%
-  mutate(A = ifelse(A == "Y1", 1, 0))
-Y_strong = strong_rw_new$Y
+$$\widehat{SACE} = \overline{Y_{1}^{obs}} - \overline{Y_{0}^{obs}} =  \cfrac{\sum_{i=1}^{N}A_{i}Y_{1i}}{N_{1}} - \cfrac{\sum_{i=1}^{N}(1-A_{i})Y_{0i}}{N_{0}} = \cfrac{5}{10} - \cfrac{2}{10} = \cfrac{3}{10} = 0.3$$
+
+
+```{r}
+point_estimate_neyman = sum(Y[A==1])/10 - sum(Y[A==0])/10
 ```
 
-
-```{r, test the sharp null hypothesis}
-Abold_3 = chooseMatrix(4, 2)
-Abold_3 = t(Abold_3)
-
-```
+* Point estimate = `r point_estimate_neyman`: For the petients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r point_estimate_neyman` > 0.
 
 
-```{r, plot the randomization distribution}
-rdist_strong <- rep(NA, times = ncol(Abold_3))
-for (i in 1:ncol(Abold_3)) {
-  A_tilde <- Abold_3[, i]
-  rdist_strong[i] <- mean(Y_strong[A_tilde == 1]) - mean(Y_strong[A_tilde == 0])
-}
+$$\widehat{var}(\widehat{SACE}) = \cfrac{S_{1}^{2}}{N_{1}} + \cfrac{S_{0}^{2}}{N_{0}} = 0.0456$$
 
-pval_3 <- mean(rdist_strong >= T_sharp_strong)
-quant_3 <- quantile(rdist_strong,probs = 1-pval_3)
-hist(rdist_strong)
-abline(v = quant_3,col="red")
-pval_3
+
+```{r}
+t_crit = qt(0.975, 9)
+var = var(Y[A==1])/10 + var(Y[A==0])/10
 ```
 
 
-As we know from the "truth", the disease would be prevented in both treatments for the strong patients. Since the exact p-value is `r pval_3` > 0.05, we fail to reject the sharp null hypothesis that there is no difference so there is no treatment effect for all individuals in the sample.
+$$CI(low) = \widehat{SACE} - z^*\sqrt{\widehat{var}(\widehat{SACE})} = -0.1828291$$
 
 
+$$CI(up) = \widehat{SACE} + z^*\sqrt{\widehat{var}(\widehat{SACE})} = 0.7828291$$
 
 
+```{r}
+CI_low = point_estimate_neyman - t_crit*sqrt(var)
+CI_up = point_estimate_neyman + t_crit*sqrt(var)
+
+```
+
+* The true ACE would fall in the range between `r CI_low` and  `r CI_up`at 5% significance level.
 
 
+## 10)
 
+The point estimates from question 8 and 9 very close to the ACE calculated from the "truth". The true ACE is in the range of the confidence interval.
 
+* In Fisher's approach, we compare any test statistic to empirical randomization distribution under sharp null hypothesis. This is a  design-based, assumption-free inference. And we derived a relatively accurate estimation using this approach. 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+* In Neyman's approach, we  compare t-statistic to normal or t distribution under average null hypothesis. This approach considers random assignment and random sampling. However, this approach also relies on large N. Since we have a relatively small N, the estimation using this approach might have limitations.
 
 
 
