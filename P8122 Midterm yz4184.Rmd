@@ -8,8 +8,10 @@ output: pdf_document
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(ggplot2)
+library(ggdag)
 library(ri)
 library(perm)
+library(boot)
 knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE,
                       message = FALSE)
@@ -285,13 +287,185 @@ The point estimates from question 8 and 9 very close to the ACE calculated from 
 * In Neyman's approach, we  compare t-statistic to normal or t distribution under average null hypothesis. This approach considers random assignment and random sampling. However, this approach also relies on large N. Since we have a relatively small N, the estimation using this approach might have limitations.
 
 
+## 11）
+
+what is the difference between the average outcome be if all units were exposed to the new treatment and the average outcome if all units were exposed to the standard treatment
 
 
+## 12)
+
+* A: Assignment. Patients are assigned to either new treatment or standard treatment.
+
+* Y: Outcome. Disease is prevented or not.
+
+* L: White blood cell (WBC) counts. The status could be normal or abnormal.
+
+```{r}
+coord_dag <- list(
+  x = c(L = 1, A = 0, Y = 2),
+  y = c(L = 1, A = 0, Y = 0))
+
+dagify(Y ~ A,
+       A ~ L,
+       Y ~ L,
+       coords = coord_dag,
+       labels = c("Y" = "Outcome",
+                  "A" = "Assignment",
+                  "L" = "WBC count status")) %>% 
+  ggdag(use_labels = "label") + theme_void()
+```
 
 
+## 13)
+
+The covariate WBC counts L is associates with both the assignment A and the outcome Y.
+
+_choice: b)_
+
+_Explanation for choice:_
+
+* From the question we know that : individuals with normal white blood cell (WBC) counts (L=1) are more likely to be prescribed the new treatment and also more likely to have a better disease prognosis. 
+
+* Because there are more patients who have normal WBC counts (L = 1) in the new treatment group (A = 1) than in the other group (A = 0), one would have expected to find a higher disease prevention rate in the group A = 1 even under the null hypothesis of no effect of treatment A on Y. The effect estimate will be biased upwards in the absence of adjustment for L.
 
 
+## 14)
 
+```{r}
+df_40 = readxl::read_xlsx("40-patients.xlsx",col_names = c("individual","Y1","Y0","A","L")) %>%
+  as.data.frame() %>%
+  mutate(Y1 = as.numeric(Y1),
+         Y0 = as.numeric(Y0),
+         A = as.numeric(A),
+         L = as.numeric(L))
+df_40 = df_40[-1,]
+```
+
+```{r}
+pr_L1 = nrow(df_40[df_40$L == 1,])/nrow(df_40)
+pr_L0 = nrow(df_40[df_40$L == 0,])/nrow(df_40)
+E_A1_L1 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 1])
+E_A1_L0 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 0])
+E_A0_L1 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 1])
+E_A0_L0 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 0])
+ACE = (E_A1_L1 * pr_L1 + E_A1_L0 * pr_L0) - (E_A0_L1 * pr_L1 + E_A0_L0 * pr_L0)
+
+```
+
+
+```{r}
+df_40_new = df_40 %>%
+pivot_longer(cols = c ("Y1","Y0"), values_to = "Y")
+```
+
+
+```{r}
+standardization <- function(data, indices) {
+ # create a dataset with 3 copies of each subject
+ d <- data[indices, ] # 1st copy: equal to original one`
+ d$interv <- -1
+ d0 <- d # 2nd copy: treatment set to 0, outcome to missing
+ d0$interv <- 0
+ d0$A <- 0
+ d0$Y <- NA
+ d1 <- d # 3rd copy: treatment set to 1, outcome to missing
+ d1$interv <- 1
+ d1$A <- 1
+ d1$Y <- NA
+ d.onesample <- rbind(d, d0, d1) # combining datasets
+ 
+ # linear model to estimate mean outcome conditional on treatment and confounders
+ # parameters are estimated using original observations only (interv= -1)
+ # parameter estimates are used to predict mean outcome for observations with set
+ # treatment (interv=0 and interv=1)
+ fit <- glm(
+ Y ~ as.factor(A)+as.factor(L),
+ data = d.onesample
+ )
+ 
+ d.onesample$predicted_meanY <- predict(fit, d.onesample)
+ 
+ # estimate mean outcome in each of the groups interv=-1, interv=0, and interv=1
+ return(c(
+ round(mean(d.onesample$predicted_meanY[d.onesample$interv == -1]),
+3),
+ round(mean(d.onesample$predicted_meanY[d.onesample$interv == 0]) ,
+3),
+ round(mean(d.onesample$predicted_meanY[d.onesample$interv == 1]) ,
+3),
+ round(mean(d.onesample$predicted_meanY[d.onesample$interv == 1]) -
+ mean(d.onesample$predicted_meanY[d.onesample$interv == 0]),3)
+ ))
+}
+
+# bootstrap
+results <- boot(data = df_40_new,
+ statistic = standardization,
+ R = 5)
+# generating confidence intervals
+se <- c(round(sd(results$t[, 1]),3), #interv=-1
+ round(sd(results$t[, 2]),3), #interv=0
+ round(sd(results$t[, 3]),3), #interv=1
+ round(sd(results$t[, 4]),3)) #interv=1-interv=0
+mean <- results$t0
+ll <- round(mean - qnorm(0.975) * se,3)
+ul <- round(mean + qnorm(0.975) * se,3)
+bootstrap <-
+ data.frame(cbind(
+ c(
+ "Observed",
+ "No Treatment",
+ "Treatment",
+ "Treatment - No Treatment"
+ ),
+ mean,
+ se,
+ ll,
+ ul
+ ))
+res <- bootstrap$mean[4]
+knitr::kable(bootstrap)
+```
+
+
+## 15)
+
+*The result of question 14 is approximately the same as the result in question 1.*
+
+* Confounding adjustment: The g-formula methods exploits conditional exchangeability in subsets defined by L to estimate the causal effect of A on Y in the entire population or in any subset of the population.
+
+
+* Under the assumption of conditional exchangeability given L, g-methods simulate the A-Y association in the population if backdoor paths involving the measured variables L did not exist; the simulated A-Y association can then be entirely attributed to the effect of A on Y .
+
+
+## 16)
+
+
+```{r}
+pr_L1 = nrow(df_40[df_40$L == 1,])/nrow(df_40)
+pr_L0 = nrow(df_40[df_40$L == 0,])/nrow(df_40)
+E_A1_L1 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 1])
+E_A1_L0 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 0])
+E_A0_L1 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 1])
+E_A0_L0 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 0])
+ACE = (E_A1_L1 * pr_L1 + E_A1_L0 * pr_L0) - (E_A0_L1 * pr_L1 + E_A0_L0 * pr_L0)
+
+```
+
+
+```{r}
+E_A1_L1 * pr_L1  - E_A0_L1 * pr_L1 
+
+E_A1_L0 * pr_L0 - E_A0_L0 * pr_L0
+```
+
+
+We can calculate the causal effect within each subset using the dataset in study 3 with g-formula. 
+
+As we can see from above, the causal effect is same between the subset (L=1) and the subset (L=0). So we can say that conditional exchangeability is in 2 strata defined by L.
+
+
+## 17)
 
 
 
