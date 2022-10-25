@@ -282,14 +282,14 @@ CI_up = point_estimate_neyman + t_crit*sqrt(var)
 
 The point estimates from question 8 and 9 very close to the ACE calculated from the "truth". The true ACE is in the range of the confidence interval.
 
-* In Fisher's approach, we compare any test statistic to empirical randomization distribution under sharp null hypothesis. This is a  design-based, assumption-free inference. And we derived a relatively accurate estimation using this approach. 
+* In Fisher's approach, we compare any test statistic to empirical randomization distribution under sharp null hypothesis. This is a design-based, assumption-free inference. And we derived a relatively accurate estimation using this approach. 
 
-* In Neyman's approach, we  compare t-statistic to normal or t distribution under average null hypothesis. This approach considers random assignment and random sampling. However, this approach also relies on large N. Since we have a relatively small N, the estimation using this approach might have limitations.
+* In Neyman's approach, we compare t-statistic to normal or t distribution under average null hypothesis. This approach considers random assignment and random sampling. However, this approach also relies on large N. Since we have a relatively small N, the estimation using this approach might have limitations.
 
 
-## 11）
+## 11)
 
-what is the difference between the average outcome be if all units were exposed to the new treatment and the average outcome if all units were exposed to the standard treatment
+What is the difference between the average outcome if all units were exposed to the new treatment and the average outcome if all units were exposed to the standard treatment?
 
 
 ## 12)
@@ -337,7 +337,8 @@ df_40 = readxl::read_xlsx("40-patients.xlsx",col_names = c("individual","Y1","Y0
   mutate(Y1 = as.numeric(Y1),
          Y0 = as.numeric(Y0),
          A = as.numeric(A),
-         L = as.numeric(L))
+         L = as.numeric(L)) %>%
+  suppressWarnings()
 df_40 = df_40[-1,]
 ```
 
@@ -467,7 +468,21 @@ As we can see from above, the causal effect is same between the subset (L=1) and
 
 ## 17)
 
+*Controlling for B and F and L suffices.*
 
+## 18)
 
+* NUCA holds because all paths between A and Y are blocked after conditioning on L in DAG.
 
+## 19)
+
+*H*
+
+## 20)
+
+* Collider: A node on a path with both arrows on the path going into that node.
+
+* Conditioning on the collider L creates an association between Y and A, so that while A and Y are marginally independent, they are conditionally dependent given L. This is known as collider selection bias.
+
+* Example: H is a collider in the path *A - L - H - F - Y*.
 

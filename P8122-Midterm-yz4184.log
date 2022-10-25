@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.10.21)  22 OCT 2022 23:05
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.10.24)  24 OCT 2022 23:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -504,28 +504,38 @@ Package amsmath Warning: Foreign command \atopwithdelims;
 
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 484.
-<P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf, id=92, 469.755pt x 325.215pt>
+<P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf, id=132, 469.755pt x 325.215pt>
 File: P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf Graphic file (type pdf)
 <use P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf>
 Package pdftex.def Info: P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf  used on input line 497.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[5] [6 <./P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf>] [7] [8] [9] [10] [11] (./P8122-Midterm-yz4184.aux)
+[5] [6 <./P8122-Midterm-yz4184_files/figure-latex/plot the randomization distribution-1.pdf>] [7] [8] [9] [10] [11]
+<P8122-Midterm-yz4184_files/figure-latex/unnamed-chunk-10-1.pdf, id=182, 469.755pt x 325.215pt>
+File: P8122-Midterm-yz4184_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type pdf)
+<use P8122-Midterm-yz4184_files/figure-latex/unnamed-chunk-10-1.pdf>
+Package pdftex.def Info: P8122-Midterm-yz4184_files/figure-latex/unnamed-chunk-10-1.pdf  used on input line 877.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+[12 <./P8122-Midterm-yz4184_files/figure-latex/unnamed-chunk-10-1.pdf>]
+LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 942.
+(c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
+File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [13] [14] [15] [16] (./P8122-Midterm-yz4184.aux)
 Package rerunfilecheck Info: File `P8122-Midterm-yz4184.out' has not changed.
-(rerunfilecheck)             Checksum: AE2CE9AD043D8E0DBC8CCAEFA1704E0E;767.
+(rerunfilecheck)             Checksum: 851DFA0616E17303117AD88744306DA6;1517.
  ) 
 Here is how much of TeX's memory you used:
- 11807 strings out of 477031
- 186147 string characters out of 5826632
- 532539 words of memory out of 5000000
- 32710 multiletter control sequences out of 15000+600000
- 519809 words of font info for 70 fonts, out of 8000000 for 9000
+ 11901 strings out of 477031
+ 187809 string characters out of 5826632
+ 532903 words of memory out of 5000000
+ 32772 multiletter control sequences out of 15000+600000
+ 520435 words of font info for 72 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  72i,6n,77p,633b,584s stack positions out of 10000i,1000n,20000p,200000b,200000s
-{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}<c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmex10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi7.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on P8122-Midterm-yz4184.pdf (11 pages, 253945 bytes).
+{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathex.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}<c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmex10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi7.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr17.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy7.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtk10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtti10.pfb><c:/Users/yunli/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on P8122-Midterm-yz4184.pdf (16 pages, 292605 bytes).
 PDF statistics:
- 226 PDF objects out of 1000 (max. 8388607)
- 177 compressed objects within 2 object streams
- 44 named destinations out of 1000 (max. 500000)
- 94 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 318 PDF objects out of 1000 (max. 8388607)
+ 258 compressed objects within 3 object streams
+ 70 named destinations out of 1000 (max. 500000)
+ 179 words of extra memory for PDF output out of 10000 (max. 10000000)
 
