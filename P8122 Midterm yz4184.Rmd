@@ -419,11 +419,10 @@ knitr::kable(bootstrap)
 ```
 
 
-*From the data we observed, we can conclude that:*
 
-* For the patients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r bootstrap$mean[1]` > 0.
+* For the patients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r bootstrap$mean[4]` > 0.
 
-* The true ACE would fall in the range between `r bootstrap$ll[1]` and  `r bootstrap$ul[1]`at 5% significance level.
+* The true ACE would fall in the range between `r bootstrap$ll[4]` and  `r bootstrap$ul[4]` at 5% significance level.
 
 
 ## 15)
@@ -447,8 +446,6 @@ E_A1_L1 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 1])
 E_A1_L0 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 0])
 E_A0_L1 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 1])
 E_A0_L0 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 0])
-ACE = E_A1_L1 * pr_L1 + E_A1_L0 * pr_L0 - (E_A0_L1 * pr_L1 + E_A0_L0 * pr_L0)
-
 ```
 
 
