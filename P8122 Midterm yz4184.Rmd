@@ -237,7 +237,7 @@ ci = range(grid[which(0.05<p.ci & p.ci<0.95)])
 
 * The point estimate is `r point_estimate` and the confidence interval is `r ci`.
 
-* Point estimate = `r point_estimate`: For the petients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r point_estimate` > 0.
+* Point estimate = `r point_estimate`: For the patients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r point_estimate` > 0.
 
 * The true ACE would fall in the range `r ci` at 5% significance level.
 
@@ -251,7 +251,7 @@ $$\widehat{SACE} = \overline{Y_{1}^{obs}} - \overline{Y_{0}^{obs}} =  \cfrac{\su
 point_estimate_neyman = sum(Y[A==1])/10 - sum(Y[A==0])/10
 ```
 
-* Point estimate = `r point_estimate_neyman`: For the petients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r point_estimate_neyman` > 0.
+* Point estimate = `r point_estimate_neyman`: For the patients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r point_estimate_neyman` > 0.
 
 
 $$\widehat{var}(\widehat{SACE}) = \cfrac{S_{1}^{2}}{N_{1}} + \cfrac{S_{0}^{2}}{N_{0}} = 0.0456$$
@@ -331,6 +331,8 @@ _Explanation for choice:_
 
 ## 14)
 
+$$\ ACE = \sum_c E[Y|A = 1, C = c]Pr(C = c) - \sum_c E[Y|A = 0, C = c]Pr(C = c)$$
+
 ```{r}
 df_40 = readxl::read_xlsx("40-patients.xlsx",col_names = c("individual","Y1","Y0","A","L")) %>%
   as.data.frame() %>%
@@ -340,17 +342,6 @@ df_40 = readxl::read_xlsx("40-patients.xlsx",col_names = c("individual","Y1","Y0
          L = as.numeric(L)) %>%
   suppressWarnings()
 df_40 = df_40[-1,]
-```
-
-```{r}
-pr_L1 = nrow(df_40[df_40$L == 1,])/nrow(df_40)
-pr_L0 = nrow(df_40[df_40$L == 0,])/nrow(df_40)
-E_A1_L1 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 1])
-E_A1_L0 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 0])
-E_A0_L1 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 1])
-E_A0_L0 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 0])
-ACE = (E_A1_L1 * pr_L1 + E_A1_L0 * pr_L0) - (E_A0_L1 * pr_L1 + E_A0_L0 * pr_L0)
-
 ```
 
 
@@ -424,22 +415,29 @@ bootstrap <-
  ll,
  ul
  ))
-res <- bootstrap$mean[4]
 knitr::kable(bootstrap)
 ```
+
+
+*From the data we observed, we can conclude that:*
+
+* For the patients who received the new treatment are more likely to prevent the disease than the standard treatment on average since `r bootstrap$mean[1]` > 0.
+
+* The true ACE would fall in the range between `r bootstrap$ll[1]` and  `r bootstrap$ul[1]`at 5% significance level.
 
 
 ## 15)
 
 *The result of question 14 is approximately the same as the result in question 1.*
 
-* Confounding adjustment: The g-formula methods exploits conditional exchangeability in subsets defined by L to estimate the causal effect of A on Y in the entire population or in any subset of the population.
+* Confounding adjustment: NUCA holds in this question and therefore within levels of L, it is as if A were randomized. The g-formula methods exploits conditional exchangeability in subsets defined by L to estimate the causal effect of A on Y in the entire population or in any subset of the population.
 
 
 * Under the assumption of conditional exchangeability given L, g-methods simulate the A-Y association in the population if backdoor paths involving the measured variables L did not exist; the simulated A-Y association can then be entirely attributed to the effect of A on Y .
 
 
 ## 16)
+
 
 
 ```{r}
@@ -449,13 +447,13 @@ E_A1_L1 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 1])
 E_A1_L0 = mean(df_40$Y1[df_40$A == 1 & df_40$L == 0])
 E_A0_L1 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 1])
 E_A0_L0 = mean(df_40$Y0[df_40$A == 0 & df_40$L == 0])
-ACE = (E_A1_L1 * pr_L1 + E_A1_L0 * pr_L0) - (E_A0_L1 * pr_L1 + E_A0_L0 * pr_L0)
+ACE = E_A1_L1 * pr_L1 + E_A1_L0 * pr_L0 - (E_A0_L1 * pr_L1 + E_A0_L0 * pr_L0)
 
 ```
 
 
 ```{r}
-E_A1_L1 * pr_L1  - E_A0_L1 * pr_L1 
+E_A1_L1 * pr_L1 - E_A0_L1 * pr_L1 
 
 E_A1_L0 * pr_L0 - E_A0_L0 * pr_L0
 ```
@@ -472,7 +470,7 @@ As we can see from above, the causal effect is same between the subset (L=1) and
 
 ## 18)
 
-* NUCA holds because all paths between A and Y are blocked after conditioning on L in DAG.
+* NUCA can be achieved only if we are able to measure all common causes of A and Y. In DAG, NUCA holds if all paths between A and Y are blocked after conditioning on L.
 
 ## 19)
 
@@ -485,4 +483,49 @@ As we can see from above, the causal effect is same between the subset (L=1) and
 * Conditioning on the collider L creates an association between Y and A, so that while A and Y are marginally independent, they are conditionally dependent given L. This is known as collider selection bias.
 
 * Example: H is a collider in the path *A - L - H - F - Y*.
+
+# Question 2
+
+## 1.
+
+* Units: The hospitals in New York state which are given the workshop.
+
+* Potential outcomes: The number of doctors from minority backgrounds that were promoted to leadership positions after given workshop is larger or not.
+
+* Treatment: The workshop for hospital administrators that focuses on the benefits of diversity in leadership. 
+
+* Observed Covariates: The ratio of white doctors in leadership positions (striking majority, majority and other).
+
+
+## 2.
+
+Since we don't know if we have unobserved confounding, we cannot assume that within strata the treatment groups are comparable.
+
+We are interested in the conditional average causal effects given covariate C (The ratio of white doctors in leadership positions):
+
+
+$$\ ACE = E[Y_{1}|C = c] - E[Y_{0}|C = c] =  E[Y|A = 1, C = c] - E[Y|A = 0, C = c]$$
+We are also interested in the marginal average causal effects given covariate C (The ratio of white doctors in leadership positions):
+
+$$\ ACE = \sum_cE[Y|A = 1, C = c]Pr(C = c) - \sum_cE[Y|A = 0, C = c]Pr(C = c)$$
+
+## 3.
+
+According to the question, we know that the workshop is assigned to the hospitals with majority of white doctors in leadership positions or requested by hospital administrators. Thus we know the assignment is not randomized and there are unobserved covariates(like time effect, the willing of administrators to change the situation). So, within strata of the known confounding variables, the treatment groups are not comparable. We cannot calculate the ACE in that case.
+
+## 4.
+
+My suggestions are follow:
+
+1. Before the assignment, we need a more thorough investigation on the baseline covariate, including the ratio of white doctors in leadership positions, the ratio of white doctors in the hospital, how much the administrators want to change the situation, etc.
+
+2. After we have all the baseline covarites, we can use block randomization method to assign the workshop. For some hospitals, we do not assign them workshop and we use those hospitals as control group.
+
+3. When analyzing the data, we can calculate both conditional and marginal ACE of new promoted doctor in minority backgrounds.
+
+
+
+
+
+
 
